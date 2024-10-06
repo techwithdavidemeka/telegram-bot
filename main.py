@@ -8,10 +8,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Get the token from environment variable
-TOKEN = os.environ.get('7363988730:AAEVmD2NglXFlkxIqBljhMUbO5_bTtlJBFI')
+TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
 # Get the GIF URL from environment variable
-GIF_URL = os.environ.get('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExd25mN2IwNGtrNXM2ZXMyNzdyM2NxenZ1dDRjdzZjZHU3emxwdDd5dSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/b7G6XGYnsTZsxgo11z/giphy.gif')
+GIF_URL = os.environ.get('GIF_URL')
 
 async def start(update: Update, context):
     await update.message.reply_text('Bot is running! It will respond with a GIF when "lfgg", "LFG", or "lfg" are mentioned in the group.')
