@@ -15,6 +15,15 @@ TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 # Dictionary to store usage statistics
 usage_stats = defaultdict(int)
 
+# List of predefined GIF URLs
+GIF_URLS = [
+    "https://media.giphy.com/media/b7G6XGYnsTZsxgo11z/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmI5Mm4xYWhoZGxjcngzYXBxamNxMjl0YTFvaGxsM3B6ZWVseHp1aSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/sl1zfWPqlozOgquzuE/giphy.gif",
+    "https://media.giphy.com/media/0IWeBirDeRK4dG0Egl/giphy.gif?cid=790b7611kpgr4b0wbzpc5mvp8yk7ce4vuo2m65cdou5schfi&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExa20wa3QwZmw5dndta2Vibm9oYTd2b2R2bGQxb2V6bWI2NDl2eXU4bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Ivaq5OHdKovVV9KCz/giphy.gif",
+    "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDBiNjcwODV0dnE1eTl2OWh3bms3cmR2bTkxaGN3M3ExeGxjMnR2diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tyxovVLbfZdok/giphy.gif"
+]
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("Start command received")
     await update.message.reply_text('Bot is running! It responds with random GIFs when "lfgg", "LFG", or "lfg" are mentioned. Try /stats to see usage statistics!')
@@ -37,26 +46,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"Received message: {message}")
         if any(keyword in message for keyword in ['lfgg', 'lfg']):
             logger.info("Keyword detected, sending GIF")
-            search_terms = ["celebration", "party", "excited", "let's go"]
-            chosen_term = random.choice(search_terms)
-            try:
-                results = await context.bot.get_inline_query_results(context.bot.id, chosen_term)
-                if results:
-                    gif = random.choice(results[:5])  # Choose randomly from top 5 results
-                    await update.message.reply_animation(gif.gif_url)
-                    
-                    # Update usage statistics
-                    user_id = update.effective_user.id
-                    usage_stats[user_id] += 1
-                    logger.info(f"GIF sent successfully. User {user_id} stats updated.")
-                else:
-                    logger.warning("No GIF results found")
-                    await update.message.reply_text("Sorry, I couldn't find a suitable GIF at the moment.")
-            except Exception as e:
-                logger.error(f"Error fetching GIF: {str(e)}")
-                await update.message.reply_text("Oops! I encountered an error while fetching a GIF. Please try again later.")
+            gif_url = random.choice(GIF_URLS)
+            await update.message.reply_animation(gif_url)
+            
+            # Update usage statistics
+            user_id = update.effective_user.id
+            usage_stats[user_id] += 1
+            logger.info(f"GIF sent successfully. User {user_id} stats updated.")
     except Exception as e:
         logger.error(f"Error in handle_message: {str(e)}")
+        await update.message.reply_text("Oops! I encountered an error while sending a GIF. Please try again later.")
 
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
