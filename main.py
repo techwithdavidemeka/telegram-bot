@@ -17,6 +17,7 @@ TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
 # Dictionary to store usage statistics
 usage_stats = defaultdict(int)
+gm_stats = defaultdict(int)
 
 # List of meme coin related GIF URLs
 GIF_URLS = [
@@ -24,8 +25,8 @@ GIF_URLS = [
     "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmI5Mm4xYWhoZGxjcngzYXBxamNxMjl0YTFvaGxsM3B6ZWVseHp1aSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/sl1zfWPqlozOgquzuE/giphy.gif",
     "https://media.giphy.com/media/0IWeBirDeRK4dG0Egl/giphy.gif?cid=790b7611kpgr4b0wbzpc5mvp8yk7ce4vuo2m65cdou5schfi&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExa20wa3QwZmw5dndta2Vibm9oYTd2b2R2bGQxb2V6bWI2NDl2eXU4bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Ivaq5OHdKovVV9KCz/giphy.gif",
-    "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDBiNjcwODV0dnE1eTl2OWh3bms3cmR2bTkxaGN3M3ExeGxjMnR2diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tyxovVLbfZdok/giphy.gif"
-    "https://media.giphy.com/media/LEdz8xl9uFxKw/giphy.gif?cid=ecf05e47r110os066y43ac5ognfx5i28yoxu47ohska5li1l&ep=v1_gifs_search&rid=giphy.gif&ct=g"
+    "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDBiNjcwODV0dnE1eTl2OWh3bms3cmR2bTkxaGN3M3ExeGxjMnR2diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tyxovVLbfZdok/giphy.gif",
+    "https://media.giphy.com/media/LEdz8xl9uFxKw/giphy.gif?cid=ecf05e47r110os066y43ac5ognfx5i28yoxu47ohska5li1l&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHJoYzh0NWZiamdkdWpmanEyYjdwa3pjczcxa3Vka2tyNzZqb2FvbSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3ohhwfAa9rbXaZe86c/giphy.gif"
 ]
 
@@ -48,8 +49,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     /timer <minutes> - Set a countdown timer
     /memeforecast - Get a meme market forecast
     /athmath - Calculate potential ATH gains
+    /gmrank - See the GM leaderboard
     
     The bot responds with a random GIF when you say "LFG" or "LFGG" in the chat.
+    Don't forget to say "GM" to climb the leaderboard!
     """
     await update.message.reply_text(help_text)
 
@@ -66,9 +69,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user_id = update.effective_user.id
             usage_stats[user_id] += 1
             logger.info(f"GIF sent successfully. User {user_id} stats updated.")
+        elif message == 'gm':
+            user_id = update.effective_user.id
+            gm_stats[user_id] += 1
+            logger.info(f"GM recorded for user {user_id}")
     except Exception as e:
         logger.error(f"Error in handle_message: {str(e)}")
-        await update.message.reply_text("Oops! Error sending GIF. Try again later.")
+        await update.message.reply_text("Oops! Error processing message. Try again later.")
 
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -80,7 +87,6 @@ async def athfact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     facts = [
         "ATH stands for All Time Happiness, not All Time High!",
         "ATH was created by a team of meme enthusiasts.",
-        "The ATH community is known for its diamond hands.",
         "ATH's whitepaper was written entirely in emojis.",
         "The first ATH transaction was to buy a virtual pet rock.",
         "ATH's blockchain runs on the power of memes.",
@@ -151,16 +157,27 @@ async def athmath(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error in athmath: {str(e)}")
         await update.message.reply_text("Math error. Looks like we divided by zero.")
 
+async def gmrank(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    sorted_gm = sorted(gm_stats.items(), key=lambda x: x[1], reverse=True)[:10]
+    leaderboard = "🌅 GM Leaderboard 🌅\n\n"
+    for i, (user_id, count) in enumerate(sorted_gm, 1):
+        user = await context.bot.get_chat_member(update.effective_chat.id, user_id)
+        name = user.user.first_name or f"User {user_id}"
+        leaderboard += f"{i}. {name}: {count} GMs\n"
+    await update.message.reply_text(leaderboard)
+
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.error(f"Exception while handling an update: {context.error}")
 
 # Railway.app specific modifications
 def save_stats():
     logger.info(f"Current usage stats: {json.dumps(usage_stats)}")
+    logger.info(f"Current GM stats: {json.dumps(gm_stats)}")
 
 def load_stats():
-    global usage_stats
+    global usage_stats, gm_stats
     usage_stats = defaultdict(int)
+    gm_stats = defaultdict(int)
 
 async def webhook(request):
     update = Update.de_json(await request.json(), application.bot)
@@ -181,6 +198,7 @@ if __name__ == '__main__':
         application.add_handler(CommandHandler("timer", set_timer))
         application.add_handler(CommandHandler("memeforecast", memeforecast))
         application.add_handler(CommandHandler("athmath", athmath))
+        application.add_handler(CommandHandler("gmrank", gmrank))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
         
