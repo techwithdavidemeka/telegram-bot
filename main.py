@@ -88,6 +88,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Oops! Error processing message. Try again later.")
 
 async def activity_rank(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    chat = update.effective_chat
+
+    # Check if the user is an admin
+    try:
+        user_status = await context.bot.get_chat_member(chat.id, user.id)
+        if user_status.status not in [ChatMember.ADMINISTRATOR, ChatMember.OWNER]:
+            await update.message.reply_text("Umm, you don't seem to be an admin. This command is for admins only!")
+            return
+    except Exception as e:
+        logger.error(f"Error checking admin status: {str(e)}")
+        await update.message.reply_text("An error occurred while checking your permissions. Please try again later.")
+        return
+
     sorted_activity = sorted(activity_stats.items(), key=lambda x: x[1], reverse=True)[:10]
     leaderboard = "🏆 Most Active Members Leaderboard 🏆\n\n"
     for i, (user_id, count) in enumerate(sorted_activity, 1):
@@ -227,7 +241,7 @@ if __name__ == '__main__':
         application.add_handler(CommandHandler("memeforecast", memeforecast))
         application.add_handler(CommandHandler("athmath", athmath))
         application.add_handler(CommandHandler("gmrank", gmrank))
-        application.add_handler(CommandHandler("activityrank", activity_rank))  # New command
+        application.add_handler(CommandHandler("activityrank", activity_rank))  # Updated command
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
         
