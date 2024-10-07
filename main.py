@@ -69,14 +69,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user_id = update.effective_user.id
             usage_stats[user_id] += 1
             logger.info(f"GIF sent successfully. User {user_id} stats updated.")
-        elif message == 'gm':
+        elif message == 'gm' and update.effective_chat.type in ['group', 'supergroup']:
             user_id = update.effective_user.id
             gm_stats[user_id] += 1
-            logger.info(f"GM recorded for user {user_id}")
+            logger.info(f"GM recorded for user {user_id} in group chat")
     except Exception as e:
         logger.error(f"Error in handle_message: {str(e)}")
         await update.message.reply_text("Oops! Error processing message. Try again later.")
-
+                
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_count = usage_stats[user_id]
