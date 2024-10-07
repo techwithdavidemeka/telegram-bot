@@ -142,27 +142,27 @@ async def athfact(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "The first ATH transaction was to buy a virtual pet rock.",
         "ATH's blockchain runs on the power of memes.",
         "In the ATH ecosystem, 1 ATH will always equal 1 ATH.",
-        "ATH's logo was designed by a blind artist for maximum randomness.",
+        "ATH's logo was d_signed by a blind artist for maximum randomness.",
         "The ATH team promises to never take themselves too seriously.",
-        "ATH's market cap is measured in units of pure vibes."
-        "Every time a Shiba Inu smiles, the ATH price rises by a token!"
-        "ATH's community meetings are held at the nearest pizza place—because memes and pizza go hand in hand."
-        "The ATH team once tried to create a crypto coin backed by happiness — but it turned into a meme instead!"
-        "The only white paper we trust is the one we use for our meme drafts!"
-        "Rumor has it that the ATH team’s secret weapon is a hidden stash of dog videos!"
-        "The only forecast we trust is one filled with memes and laughter!"
-        "ATH holders are known to have diamond hands—because they’re holding onto joy!"
-        "The ATH token is rumored to have magical properties — like turning frowns upside down!"
-        "In the world of ATH, every meme is a potential fortune!"
-        "ATH has a strict 'no grumpy faces' policy; all members must smile when using the token."
-        "In the ATH universe, laughter is the best investment!"
-        "The first rule of ATH: If you’re not laughing, you’re doing it wrong!"
-        "ATH believes in sharing is caring—especially when it comes to memes!"
-        "Each ATH transaction is celebrated with a meme party!"
-        "ATH's mascot is known to grant wishes—if you rub its virtual belly."
-        "Every time someone says 'LFG', a new GIF is born!"
-        "ATH holders are required to have at least one funny meme on their profile."
-        "The ATH community once staged a meme-off that lasted 24 hours straight!"
+        "ATH's market cap is measured in units of pure vibes.",
+        "Every time a Shiba Inu smiles, the ATH price rises by a token!",
+        "ATH's community meetings are held at the nearest pizza place—because memes and pizza go hand in hand.",
+        "The ATH team once tried to create a crypto coin backed by happiness — but it turned into a meme instead!",
+        "The only white paper we trust is the one we use for our meme drafts!",
+        "Rumor has it that the ATH team’s secret weapon is a hidden stash of dog videos!",
+        "The only forecast we trust is one filled with memes and laughter!",
+        "ATH holders are known to have diamond hands—because they’re holding onto joy!",
+        "The ATH token is rumored to have magical properties — like turning frowns upside down!",
+        "In the world of ATH, every meme is a potential fortune!",
+        "ATH has a strict 'no grumpy faces' policy; all members must smile when using the token.",
+        "In the ATH universe, laughter is the best investment!",
+        "The first rule of ATH: If you’re not laughing, you’re doing it wrong!",
+        "ATH believes in sharing is caring—especially when it comes to memes!",
+        "Each ATH transaction is celebrated with a meme party!",
+        "ATH's mascot is known to grant wishes—if you rub its virtual belly.",
+        "Every time someone says 'LFG', a new GIF is born!",
+        "ATH holders are required to have at least one funny meme on their profile.",
+        "The ATH community once staged a meme-off that lasted 24 hours straight!",
         "ATH promises that the journey to the moon will always be filled with laughter!"
     ]
     await update.message.reply_text(random.choice(facts))
