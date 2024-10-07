@@ -2,7 +2,7 @@ import os
 import logging
 import random
 import asyncio
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ChatMember
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 from collections import defaultdict
 import json
@@ -63,39 +63,6 @@ async def activity_rank(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     chat = update.effective_chat
 
-    if not chat.type in ['group', 'supergroup']:
-        await update.message.reply_text("This command can only be used in group chats.")
-        return
-
-    # Check if the user is an admin
-    try:
-        admins = await chat.get_administrators()
-        is_admin = any(admin.user.id == user.id for admin in admins)
-        
-        logger.info(f"User {user.id} admin status in chat {chat.id}: {is_admin}")
-        
-        if is_admin:
-            sorted_activity = sorted(activity_stats.items(), key=lambda x: x[1], reverse=True)[:10]
-            leaderboard = "🏆 Most Active Members Leaderboard 🏆\n\n"
-            for i, (user_id, count) in enumerate(sorted_activity, 1):
-                try:
-                    member = await chat.get_member(user_id)
-                    name = member.user.first_name or f"User {user_id}"
-                except Exception as e:
-                    logger.error(f"Error getting member info: {str(e)}")
-                    name = f"User {user_id}"
-                leaderboard += f"{i}. {name}: {count} messages\n"
-            await update.message.reply_text(leaderboard)
-        else:
-            await update.message.reply_text("Umm, you don't seem to be an admin. This command is for admins only!")
-    except Exception as e:
-        logger.error(f"Error checking admin status for user {user.id} in chat {chat.id}: {str(e)}")
-        await update.message.reply_text("An error occurred while checking your permissions. Please try again later.")
-
-async def activity_rank(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    chat = update.effective_chat
-
     # Check if the user is an admin
     try:
         user_status = await context.bot.get_chat_member(chat.id, user.id)
@@ -124,6 +91,35 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_count = usage_stats[user_id]
     total_count = sum(usage_stats.values())
     await update.message.reply_text(f"🚀 Your LFG count: {user_count}\n💎 Community LFG total: {total_count}")
+
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        message = update.message.text.lower()
+        logger.info(f"Received message: {message}")
+        
+        # Track activity for group messages
+        if update.effective_chat.type in ['group', 'supergroup']:
+            user_id = update.effective_user.id
+            activity_stats[user_id] += 1
+            logger.info(f"Activity recorded for user {user_id} in group chat")
+        
+        if any(keyword in message for keyword in ['lfgg', 'lfg']):
+            logger.info("Keyword detected, sending GIF")
+            gif_url = random.choice(GIF_URLS)
+            await update.message.reply_animation(gif_url)
+            
+            # Update usage statistics
+            user_id = update.effective_user.id
+            usage_stats[user_id] += 1
+            logger.info(f"GIF sent successfully. User {user_id} stats updated.")
+        elif message == 'gm' and update.effective_chat.type in ['group', 'supergroup']:
+            user_id = update.effective_user.id
+            gm_stats[user_id] += 1
+            logger.info(f"GM recorded for user {user_id} in group chat")
+    except Exception as e:
+        logger.error(f"Error in handle_message: {str(e)}")
+        await update.message.reply_text("Oops! Error processing message. Try again later.")
 
 async def athfact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     facts = [
