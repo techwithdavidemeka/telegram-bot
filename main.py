@@ -232,10 +232,10 @@ def load_stats_from_file(filename):
     return defaultdict(int)
 
 # Function to periodically save stats
-async def periodic_save(interval=300):  # Save every 5 minutes
-    while True:
-        await asyncio.sleep(interval)
-        save_stats()
+def periodic_save(context: ContextTypes.DEFAULT_TYPE):
+    save_stats()
+    logger.info("Stats saved to files")
+
 
 # Railway.app specific modifications
 def save_stats():
@@ -278,9 +278,9 @@ if __name__ == '__main__':
         application.add_error_handler(error_handler)
         
         # Set up periodic save
-        application.create_task(periodic_save())
+        application.job_queue.run_repeating(periodic_save, interval=300)
         
-        # Set up webhook
+        # Set up webhook or polling
         PORT = int(os.environ.get('PORT', '8080'))
         WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
         
