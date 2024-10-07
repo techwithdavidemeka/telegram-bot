@@ -52,6 +52,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     /memeforecast - Get a meme market forecast
     /athmath - Calculate potential ATH gains
     /gmrank - See the GM leaderboard
+    /activityrank - See the most active members leaderboard
     
     The bot responds with a random GIF when you say "LFG" or "LFGG" in the chat.
     Don't forget to say "GM" to climb the leaderboard!
