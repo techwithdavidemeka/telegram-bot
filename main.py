@@ -161,8 +161,11 @@ async def gmrank(update: Update, context: ContextTypes.DEFAULT_TYPE):
     sorted_gm = sorted(gm_stats.items(), key=lambda x: x[1], reverse=True)[:10]
     leaderboard = "🌅 GM Leaderboard 🌅\n\n"
     for i, (user_id, count) in enumerate(sorted_gm, 1):
-        user = await context.bot.get_chat_member(update.effective_chat.id, user_id)
-        name = user.user.first_name or f"User {user_id}"
+        try:
+            user = await context.bot.get_chat(user_id)
+            name = user.first_name or f"User {user_id}"
+        except Exception:
+            name = f"User {user_id}"
         leaderboard += f"{i}. {name}: {count} GMs\n"
     await update.message.reply_text(leaderboard)
 
