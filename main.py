@@ -74,7 +74,10 @@ async def activity_rank(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("An error occurred while checking your permissions. Please try again later.")
         return
 
-    sorted_activity = sorted(activity_stats.items(), key=lambda x: x[1], reverse=True)[:10]
+    # Filter out the specified user ID and sort the activity stats
+    filtered_activity = {user_id: count for user_id, count in activity_stats.items() if user_id != 6474981575}
+    sorted_activity = sorted(filtered_activity.items(), key=lambda x: x[1], reverse=True)[:10]
+    
     leaderboard = "🏆 Most Active Members Leaderboard 🏆\n\n"
     for i, (user_id, count) in enumerate(sorted_activity, 1):
         try:
@@ -210,17 +213,45 @@ async def gmrank(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.error(f"Exception while handling an update: {context.error}")
 
+# File paths for storing stats
+PERSISTENT_STORAGE_PATH = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '')
+USAGE_STATS_FILE = os.path.join(PERSISTENT_STORAGE_PATH, 'usage_stats.json')
+GM_STATS_FILE = os.path.join(PERSISTENT_STORAGE_PATH, 'gm_stats.json')
+ACTIVITY_STATS_FILE = os.path.join(PERSISTENT_STORAGE_PATH, 'activity_stats.json')
+
+# Function to save stats to file
+def save_stats_to_file(stats, filename):
+    with open(filename, 'w') as f:
+        json.dump(stats, f)
+
+# Function to load stats from file
+def load_stats_from_file(filename):
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            return defaultdict(int, json.load(f))
+    return defaultdict(int)
+
+# Function to periodically save stats
+async def periodic_save(interval=300):  # Save every 5 minutes
+    while True:
+        await asyncio.sleep(interval)
+        save_stats()
+
 # Railway.app specific modifications
 def save_stats():
-    logger.info(f"Current usage stats: {json.dumps(usage_stats)}")
-    logger.info(f"Current GM stats: {json.dumps(gm_stats)}")
-    logger.info(f"Current activity stats: {json.dumps(activity_stats)}")
+    save_stats_to_file(usage_stats, USAGE_STATS_FILE)
+    save_stats_to_file(gm_stats, GM_STATS_FILE)
+    save_stats_to_file(activity_stats, ACTIVITY_STATS_FILE)
+    logger.info("Stats saved to files")
 
+# Updated load_stats function
 def load_stats():
     global usage_stats, gm_stats, activity_stats
-    usage_stats = defaultdict(int)
-    gm_stats = defaultdict(int)
-    activity_stats = defaultdict(int)
+    usage_stats = load_stats_from_file(USAGE_STATS_FILE)
+    gm_stats = load_stats_from_file(GM_STATS_FILE)
+    activity_stats = load_stats_from_file(ACTIVITY_STATS_FILE)
+    logger.info("Stats loaded from files")
+
 
 async def webhook(request):
     update = Update.de_json(await request.json(), application.bot)
@@ -242,9 +273,12 @@ if __name__ == '__main__':
         application.add_handler(CommandHandler("memeforecast", memeforecast))
         application.add_handler(CommandHandler("athmath", athmath))
         application.add_handler(CommandHandler("gmrank", gmrank))
-        application.add_handler(CommandHandler("activityrank", activity_rank))  # Updated command
+        application.add_handler(CommandHandler("activityrank", activity_rank))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
+        
+        # Set up periodic save
+        application.create_task(periodic_save())
         
         # Set up webhook
         PORT = int(os.environ.get('PORT', '8080'))
