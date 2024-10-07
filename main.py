@@ -8,7 +8,18 @@ from collections import defaultdict
 import json
 import datetime
 
+# User ID to exclude
+EXCLUDED_USER_ID = 6474981575
+
+# Dictionary to store usage statistics
+usage_stats = defaultdict(int)
+gm_stats = defaultdict(int)
+
+# Dictionary to store user activity, initialized with 0 for all users
 activity_stats = defaultdict(int)
+
+activity_stats = defaultdict(int)
+
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -98,11 +109,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         message = update.message.text.lower()
         logger.info(f"Received message: {message}")
         
-        # Track activity for group messages
+        # Track activity for group messages, excluding the specified user
         if update.effective_chat.type in ['group', 'supergroup']:
             user_id = update.effective_user.id
-            activity_stats[user_id] += 1
-            logger.info(f"Activity recorded for user {user_id} in group chat")
+            if user_id != EXCLUDED_USER_ID:
+                activity_stats[user_id] += 1
+                logger.info(f"Activity recorded for user {user_id} in group chat")
         
         if any(keyword in message for keyword in ['lfgg', 'lfg']):
             logger.info("Keyword detected, sending GIF")
@@ -117,6 +129,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user_id = update.effective_user.id
             gm_stats[user_id] += 1
             logger.info(f"GM recorded for user {user_id} in group chat")
+            
     except Exception as e:
         logger.error(f"Error in handle_message: {str(e)}")
         await update.message.reply_text("Oops! Error processing message. Try again later.")
