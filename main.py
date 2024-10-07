@@ -8,6 +8,8 @@ from collections import defaultdict
 import json
 import datetime
 
+activity_stats = defaultdict(int)
+
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -60,6 +62,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         message = update.message.text.lower()
         logger.info(f"Received message: {message}")
+        
+        # Track activity for group messages
+        if update.effective_chat.type in ['group', 'supergroup']:
+            user_id = update.effective_user.id
+            activity_stats[user_id] += 1
+            logger.info(f"Activity recorded for user {user_id} in group chat")
+        
         if any(keyword in message for keyword in ['lfgg', 'lfg']):
             logger.info("Keyword detected, sending GIF")
             gif_url = random.choice(GIF_URLS)
@@ -76,7 +85,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Error in handle_message: {str(e)}")
         await update.message.reply_text("Oops! Error processing message. Try again later.")
-                
+
+async def activity_rank(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    sorted_activity = sorted(activity_stats.items(), key=lambda x: x[1], reverse=True)[:10]
+    leaderboard = "🏆 Most Active Members Leaderboard 🏆\n\n"
+    for i, (user_id, count) in enumerate(sorted_activity, 1):
+        try:
+            user = await context.bot.get_chat(user_id)
+            name = user.first_name or f"User {user_id}"
+        except Exception:
+            name = f"User {user_id}"
+        leaderboard += f"{i}. {name}: {count} messages\n"
+    await update.message.reply_text(leaderboard)
+
+
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_count = usage_stats[user_id]
@@ -176,11 +198,13 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 def save_stats():
     logger.info(f"Current usage stats: {json.dumps(usage_stats)}")
     logger.info(f"Current GM stats: {json.dumps(gm_stats)}")
+    logger.info(f"Current activity stats: {json.dumps(activity_stats)}")
 
 def load_stats():
-    global usage_stats, gm_stats
+    global usage_stats, gm_stats, activity_stats
     usage_stats = defaultdict(int)
     gm_stats = defaultdict(int)
+    activity_stats = defaultdict(int)
 
 async def webhook(request):
     update = Update.de_json(await request.json(), application.bot)
@@ -202,6 +226,7 @@ if __name__ == '__main__':
         application.add_handler(CommandHandler("memeforecast", memeforecast))
         application.add_handler(CommandHandler("athmath", athmath))
         application.add_handler(CommandHandler("gmrank", gmrank))
+        application.add_handler(CommandHandler("activityrank", activity_rank))  # New command
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
         
