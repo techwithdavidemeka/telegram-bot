@@ -44,6 +44,7 @@ GIF_URLS = [
 # List of vibe related GIF URLs
 VIBE_GIF_URLS = [
     "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGx2cTVld3k1OHdmZXJwbmExaXA2N2FyM3Fic292eDhkcDZyMTNjcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/W4W8563HPYTwIbeGF0/giphy.gif",
+    "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbThya3JzNTc2cXh1MW81NHhvZjFjdnZuNXN0OWljY2VwY3NzZjZkbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/z9q7kAEytv2VGclH7M/giphy.gif",
     "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGx2cTVld3k1OHdmZXJwbmExaXA2N2FyM3Fic292eDhkcDZyMTNjcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/iLsnYQ9Nj60MzbYxVN/giphy.gif",
     "https://media.giphy.com/media/7dBAYTBhHIDvLhz30a/giphy.gif?cid=790b7611xlvq5ewy58wferpna1ip67ar3qbsovx8dp6r13cq&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media.giphy.com/media/jcTjFMPRbr49d6r5sg/giphy.gif?cid=790b7611xlvq5ewy58wferpna1ip67ar3qbsovx8dp6r13cq&ep=v1_gifs_search&rid=giphy.gif&ct=g",
