@@ -15,12 +15,6 @@ EXCLUDED_USER_ID = 6474981575
 usage_stats = defaultdict(int)
 gm_stats = defaultdict(int)
 
-# Dictionary to store user activity, initialized with 0 for all users
-activity_stats = defaultdict(int)
-
-activity_stats = defaultdict(int)
-
-
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,6 +29,10 @@ gm_stats = defaultdict(int)
 # List of meme coin related GIF URLs
 GIF_URLS = [
     "https://media.giphy.com/media/b7G6XGYnsTZsxgo11z/giphy.gif",
+    "https://media.giphy.com/media/3o7qDQ4kcSD1PLM3BK/giphy.gif",
+    "https://media.giphy.com/media/zd9wcDX4H4z4I/giphy.gif?cid=ecf05e47bpcufhje0q65uq687ahgwh16bixmzxngos4yffjf&ep=v1_gifs_related&rid=giphy.gif&ct=g",
+    "https://media.giphy.com/media/6BTH6UfhABwOURexMj/giphy.gif?cid=790b76113uvg5pk5g3hyyhufo30ccoiq1k0sji967cwmgv50&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://media.giphy.com/media/6BTH6UfhABwOURexMj/giphy.gif?cid=790b76113uvg5pk5g3hyyhufo30ccoiq1k0sji967cwmgv50&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmI5Mm4xYWhoZGxjcngzYXBxamNxMjl0YTFvaGxsM3B6ZWVseHp1aSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/sl1zfWPqlozOgquzuE/giphy.gif",
     "https://media.giphy.com/media/0IWeBirDeRK4dG0Egl/giphy.gif?cid=790b7611kpgr4b0wbzpc5mvp8yk7ce4vuo2m65cdou5schfi&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExa20wa3QwZmw5dndta2Vibm9oYTd2b2R2bGQxb2V6bWI2NDl2eXU4bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Ivaq5OHdKovVV9KCz/giphy.gif",
@@ -43,13 +41,24 @@ GIF_URLS = [
     "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHJoYzh0NWZiamdkdWpmanEyYjdwa3pjczcxa3Vka2tyNzZqb2FvbSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3ohhwfAa9rbXaZe86c/giphy.gif"
 ]
 
+# List of vibe related GIF URLs
+VIBE_GIF_URLS = [
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGx2cTVld3k1OHdmZXJwbmExaXA2N2FyM3Fic292eDhkcDZyMTNjcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/W4W8563HPYTwIbeGF0/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGx2cTVld3k1OHdmZXJwbmExaXA2N2FyM3Fic292eDhkcDZyMTNjcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/iLsnYQ9Nj60MzbYxVN/giphy.gif",
+    "https://media.giphy.com/media/7dBAYTBhHIDvLhz30a/giphy.gif?cid=790b7611xlvq5ewy58wferpna1ip67ar3qbsovx8dp6r13cq&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://media.giphy.com/media/jcTjFMPRbr49d6r5sg/giphy.gif?cid=790b7611xlvq5ewy58wferpna1ip67ar3qbsovx8dp6r13cq&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://media.giphy.com/media/8m4R4pvViWtRzbloJ1/giphy.gif?cid=790b76115y0prvukvljkq3omkwszg3jzmdb64e5h9ai61kju&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://media.giphy.com/media/10D8j2EpNCXDA4/giphy.gif?cid=790b7611nfziosd3t3iw1g3ozvxqpp8bnpxuymi5zntr7lum&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXkwcHJ2dWt2bGprcTNvbWt3c3pnM2p6bWRiNjRlNWg5YWk2MWtqdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/4oMoIbIQrvCjm/giphy.gif"
+]
+
 # Custom exceptions
 class InvalidTimerDuration(Exception):
     pass
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("Start command received")
-    await update.message.reply_text('bagy Bot is live! Respond with "lfgg", "LFG", or "lfg" to summon a GIF. Use /help for more commands!')
+    await update.message.reply_text('bagy Bot is live! Respond with "lfgg", "LFG", "lfg", "vibe", or "vibes" to summon a GIF. Use /help for more commands!')
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("Help command received")
@@ -63,39 +72,11 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     /memeforecast - Get a meme market forecast
     /bagymath - Calculate potential bagy gains
     /gmrank - See the GM leaderboard
-    /activityrank - See the most active members leaderboard
     
-    The bot responds with a random GIF when you say "LFG" or "LFGG" in the chat.
+    The bot responds with a random GIF when you say "LFG", "LFGG", "vibe", or "vibes" in the chat.
     Don't forget to say "GM" to climb the leaderboard!
     """
     await update.message.reply_text(help_text)
-
-async def activity_rank(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    chat = update.effective_chat
-
-    # Check if the user is an admin
-    try:
-        user_status = await context.bot.get_chat_member(chat.id, user.id)
-        if user_status.status not in [ChatMember.ADMINISTRATOR, ChatMember.OWNER]:
-            await update.message.reply_text("Umm, you don't seem to be an admin. This command is for admins only!")
-            return
-    except Exception as e:
-        logger.error(f"Error checking admin status: {str(e)}")
-        await update.message.reply_text("An error occurred while checking your permissions. Please try again later.")
-        return
-
-    sorted_activity = sorted(activity_stats.items(), key=lambda x: x[1], reverse=True)[:10]
-    leaderboard = "🏆 Most Active Members Leaderboard 🏆\n\n"
-    for i, (user_id, count) in enumerate(sorted_activity, 1):
-        try:
-            user = await context.bot.get_chat(user_id)
-            name = user.first_name or f"User {user_id}"
-        except Exception:
-            name = f"User {user_id}"
-        leaderboard += f"{i}. {name}: {count} messages\n"
-    await update.message.reply_text(leaderboard)
-
 
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -103,21 +84,18 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     total_count = sum(usage_stats.values())
     await update.message.reply_text(f"🚀 Your LFG count: {user_count}\n💎 Community LFG total: {total_count}")
 
-
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         message = update.message.text.lower()
         logger.info(f"Received message: {message}")
         
-        # Track activity for group messages, excluding the specified user
         if update.effective_chat.type in ['group', 'supergroup']:
             user_id = update.effective_user.id
             if user_id != EXCLUDED_USER_ID:
-                activity_stats[user_id] += 1
-                logger.info(f"Activity recorded for user {user_id} in group chat")
+                logger.info(f"Message recorded for user {user_id} in group chat")
         
         if any(keyword in message for keyword in ['lfgg', 'lfg']):
-            logger.info("Keyword detected, sending GIF")
+            logger.info("LFG keyword detected, sending GIF")
             gif_url = random.choice(GIF_URLS)
             await update.message.reply_animation(gif_url)
             
@@ -125,6 +103,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user_id = update.effective_user.id
             usage_stats[user_id] += 1
             logger.info(f"GIF sent successfully. User {user_id} stats updated.")
+        elif any(keyword in message for keyword in ['vibe', 'vibes']):
+            logger.info("Vibe keyword detected, sending vibe GIF")
+            vibe_gif_url = random.choice(VIBE_GIF_URLS)
+            await update.message.reply_animation(vibe_gif_url)
         elif message == 'gm' and update.effective_chat.type in ['group', 'supergroup']:
             user_id = update.effective_user.id
             gm_stats[user_id] += 1
@@ -254,13 +236,11 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 def save_stats():
     logger.info(f"Current usage stats: {json.dumps(usage_stats)}")
     logger.info(f"Current GM stats: {json.dumps(gm_stats)}")
-    logger.info(f"Current activity stats: {json.dumps(activity_stats)}")
 
 def load_stats():
-    global usage_stats, gm_stats, activity_stats
+    global usage_stats, gm_stats
     usage_stats = defaultdict(int)
     gm_stats = defaultdict(int)
-    activity_stats = defaultdict(int)
 
 async def webhook(request):
     update = Update.de_json(await request.json(), application.bot)
@@ -282,7 +262,6 @@ if __name__ == '__main__':
         application.add_handler(CommandHandler("memeforecast", memeforecast))
         application.add_handler(CommandHandler("bagymath", bagymath))
         application.add_handler(CommandHandler("gmrank", gmrank))
-        application.add_handler(CommandHandler("activityrank", activity_rank))  # Updated command
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
         
