@@ -249,7 +249,7 @@ async def webhook(request):
 
 if __name__ == '__main__':
     try:
-        logger.info("Starting bagy bot initialization...")
+        logger.info("Starting bagy bot initialization....")
         load_stats()
         application = Application.builder().token(TOKEN).build()
         
