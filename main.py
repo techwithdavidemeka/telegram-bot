@@ -8,24 +8,19 @@ from collections import defaultdict
 import json
 import datetime
 
-
-# User ID to exclude
-EXCLUDED_USER_ID = 6474981575
-
-# Dictionary to store usage statistics
-usage_stats = defaultdict(int)
-gm_stats = defaultdict(int)
-
 # Enable detailed logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG  # Changed to DEBUG for more detailed logs
+    level=logging.DEBUG
 )
 logger = logging.getLogger(__name__)
 
 # Dictionary to store usage statistics
 usage_stats = defaultdict(int)
 gm_stats = defaultdict(int)
+
+# Developer's user ID for error reporting
+DEVELOPER_ID = 6084407830
 
 # List of meme coin related GIF URLs
 GIF_URLS = [
@@ -121,10 +116,19 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"🚀 Your LFG count: {user_count}\n💎 Community LFG total: {total_count}")
 
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Enhanced message handler with better error handling and logging"""
+async def notify_developer(context: ContextTypes.DEFAULT_TYPE, error_message: str):
+    """Send error notifications to the developer"""
     try:
-        # Validate that we have a message
+        await context.bot.send_message(
+            chat_id=DEVELOPER_ID,
+            text=f"🚨 Bot Error Report:\n\n{error_message}\n\nTimestamp: {datetime.datetime.now()}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to notify developer: {str(e)}")
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Enhanced message handler with better error handling"""
+    try:
         if not update.message or not update.message.text:
             logger.warning("Received update without message or text")
             return
@@ -135,71 +139,66 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         logger.debug(f"Processing message: '{message}' from user {user_id} in chat type {chat_type}")
 
-        # Skip processing if no valid user_id
         if not user_id:
             logger.warning("No valid user_id found in update")
-            return
-
-        # Skip excluded user
-        if user_id == EXCLUDED_USER_ID:
-            logger.debug(f"Skipping excluded user {EXCLUDED_USER_ID}")
             return
 
         # Process NSFW keywords
         nsfw_keywords = ['fcker', 'fvcker', 'mtfr', 'fucker']
         if any(keyword in message or f"{keyword}s" in message for keyword in nsfw_keywords):
-            logger.info(f"NSFW keyword detected in message from user {user_id}")
+            gif_url = random.choice(NSFW_GIF_URLS)
             try:
-                nsfw_gif_url = random.choice(NSFW_GIF_URLS)
-                await update.message.reply_animation(nsfw_gif_url)
-                logger.debug(f"Successfully sent NSFW GIF to user {user_id}")
-            except TelegramError as te:
-                logger.error(f"Failed to send NSFW GIF: {str(te)}")
-                await update.message.reply_text("Sorry, couldn't send the GIF. Please try again later.")
+                await update.message.reply_animation(gif_url)
+            except Exception as e:
+                # Try alternative GIF if first fails
+                try:
+                    alternative_gif = random.choice([url for url in NSFW_GIF_URLS if url != gif_url])
+                    await update.message.reply_animation(alternative_gif)
+                except Exception as e2:
+                    await notify_developer(context, f"Failed to send NSFW GIF:\nFirst attempt: {str(e)}\nSecond attempt: {str(e2)}")
             return
 
         # Process LFG keywords
         if any(keyword in message for keyword in ['lfgg', 'lfg']):
-            logger.info(f"LFG keyword detected from user {user_id}")
+            gif_url = random.choice(GIF_URLS)
             try:
-                gif_url = random.choice(GIF_URLS)
                 await update.message.reply_animation(gif_url)
                 usage_stats[user_id] += 1
-                logger.debug(f"Successfully sent LFG GIF to user {user_id}")
-            except TelegramError as te:
-                logger.error(f"Failed to send LFG GIF: {str(te)}")
-                await update.message.reply_text("Sorry, couldn't send the GIF. Please try again later.")
+            except Exception as e:
+                # Try alternative GIF if first fails
+                try:
+                    alternative_gif = random.choice([url for url in GIF_URLS if url != gif_url])
+                    await update.message.reply_animation(alternative_gif)
+                    usage_stats[user_id] += 1
+                except Exception as e2:
+                    await notify_developer(context, f"Failed to send LFG GIF:\nFirst attempt: {str(e)}\nSecond attempt: {str(e2)}")
             return
 
         # Process vibe keywords
         if any(keyword in message for keyword in ['vibe', 'vibes']):
-            logger.info(f"Vibe keyword detected from user {user_id}")
+            gif_url = random.choice(VIBE_GIF_URLS)
             try:
-                vibe_gif_url = random.choice(VIBE_GIF_URLS)
-                await update.message.reply_animation(vibe_gif_url)
-                logger.debug(f"Successfully sent vibe GIF to user {user_id}")
-            except TelegramError as te:
-                logger.error(f"Failed to send vibe GIF: {str(te)}")
-                await update.message.reply_text("Sorry, couldn't send the GIF. Please try again later.")
+                await update.message.reply_animation(gif_url)
+            except Exception as e:
+                # Try alternative GIF if first fails
+                try:
+                    alternative_gif = random.choice([url for url in VIBE_GIF_URLS if url != gif_url])
+                    await update.message.reply_animation(alternative_gif)
+                except Exception as e2:
+                    await notify_developer(context, f"Failed to send vibe GIF:\nFirst attempt: {str(e)}\nSecond attempt: {str(e2)}")
             return
 
         # Process GM message
         if message == 'gm' and chat_type in ['group', 'supergroup']:
-            logger.info(f"GM message detected from user {user_id}")
             try:
                 gm_stats[user_id] += 1
-                logger.debug(f"Successfully recorded GM for user {user_id}")
             except Exception as e:
-                logger.error(f"Failed to record GM stat: {str(e)}")
+                await notify_developer(context, f"Failed to record GM stat: {str(e)}")
 
     except Exception as e:
-        logger.error(f"Unexpected error in handle_message: {str(e)}", exc_info=True)
-        try:
-            await update.message.reply_text(
-                "Sorry, something went wrong. Our devs have been notified."
-            )
-        except Exception as reply_error:
-            logger.error(f"Failed to send error message: {str(reply_error)}")
+        error_msg = f"Unexpected error in handle_message: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        await notify_developer(context, error_msg)
 
 async def bagyfact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     facts = [
@@ -315,23 +314,12 @@ async def gmrank(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(leaderboard)
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Enhanced error handler with more detailed logging"""
-    logger.error("Exception while handling an update:", exc_info=context.error)
+    """Enhanced error handler with developer notification"""
+    error_msg = f"Exception while handling an update:\n{str(context.error)}"
+    logger.error(error_msg, exc_info=context.error)
     
     try:
-        # Get the error message
-        error_msg = str(context.error)
-        
-        if isinstance(context.error, TelegramError):
-            logger.error(f"Telegram API Error: {error_msg}")
-        else:
-            logger.error(f"Non-Telegram Error: {error_msg}")
-
-        # If we have an update object with a message, try to notify the user
-        if update and hasattr(update, 'effective_message') and update.effective_message:
-            await update.effective_message.reply_text(
-                "Sorry, an error occurred. Please try again later."
-            )
+        await notify_developer(context, error_msg)
     except Exception as e:
         logger.error(f"Error in error handler: {str(e)}", exc_info=True)
 
@@ -351,16 +339,14 @@ async def webhook(request):
     return 'OK'
 
 def main():
-    """Initialize and start the bot with enhanced error handling"""
+    """Initialize and start the bot"""
     try:
         logger.info("Starting bot initialization...")
         
-        # Validate token
         token = os.environ.get('TELEGRAM_BOT_TOKEN')
         if not token:
             raise ValueError("TELEGRAM_BOT_TOKEN environment variable is not set")
 
-        # Initialize application
         application = Application.builder().token(token).build()
         
         # Add handlers
@@ -375,7 +361,6 @@ def main():
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
         
-        # Set up webhook or polling
         PORT = int(os.environ.get('PORT', '8080'))
         WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
         
