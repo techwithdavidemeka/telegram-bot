@@ -8,6 +8,7 @@ from collections import defaultdict
 import json
 import datetime
 
+
 # User ID to exclude
 EXCLUDED_USER_ID = 6474981575
 
@@ -30,6 +31,20 @@ gm_stats = defaultdict(int)
 GIF_URLS = [
     "https://media.giphy.com/media/b7G6XGYnsTZsxgo11z/giphy.gif",
     "https://media.giphy.com/media/3o7qDQ4kcSD1PLM3BK/giphy.gif",
+    "https://tenor.com/bXUs6.gif",
+    "https://tenor.com/bPALW.gif",
+    "https://tenor.com/u9Lnp2b5ODT.gif",
+    "https://tenor.com/bWx4i.gif",
+    "https://tenor.com/bppEp.gif",
+    "https://tenor.com/b0Saj.gif",
+    "https://tenor.com/rWkFncoav0M.gif",
+    "https://tenor.com/bSK4j.gif",
+    "https://tenor.com/bRyqj.gif",
+    "https://tenor.com/bQfSi.gif",
+    "https://tenor.com/bP0kb.gif",
+    "https://tenor.com/bmrasvphRgS.gif",
+    "https://tenor.com/fSu8r2CACT3.gif",
+    "https://tenor.com/bdid0.gif",
     "https://media.giphy.com/media/zd9wcDX4H4z4I/giphy.gif?cid=ecf05e47bpcufhje0q65uq687ahgwh16bixmzxngos4yffjf&ep=v1_gifs_related&rid=giphy.gif&ct=g",
     "https://media.giphy.com/media/6BTH6UfhABwOURexMj/giphy.gif?cid=790b76113uvg5pk5g3hyyhufo30ccoiq1k0sji967cwmgv50&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media.giphy.com/media/6BTH6UfhABwOURexMj/giphy.gif?cid=790b76113uvg5pk5g3hyyhufo30ccoiq1k0sji967cwmgv50&ep=v1_gifs_search&rid=giphy.gif&ct=g",
@@ -50,7 +65,27 @@ VIBE_GIF_URLS = [
     "https://media.giphy.com/media/jcTjFMPRbr49d6r5sg/giphy.gif?cid=790b7611xlvq5ewy58wferpna1ip67ar3qbsovx8dp6r13cq&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media.giphy.com/media/8m4R4pvViWtRzbloJ1/giphy.gif?cid=790b76115y0prvukvljkq3omkwszg3jzmdb64e5h9ai61kju&ep=v1_gifs_search&rid=giphy.gif&ct=g",
     "https://media.giphy.com/media/10D8j2EpNCXDA4/giphy.gif?cid=790b7611nfziosd3t3iw1g3ozvxqpp8bnpxuymi5zntr7lum&ep=v1_gifs_search&rid=giphy.gif&ct=g",
+    "https://tenor.com/bw5mW.gif",
+    "https://tenor.com/bG3U0.gif",
+    "https://tenor.com/gt96lPdLzIP.gif",
+    "https://tenor.com/tVz7oiszZf.gif",
+    "https://tenor.com/fFc7P4A0tg2.gif",
+    "https://tenor.com/bwhMO.gif",
+    "https://tenor.com/TEgq.gif",
+    "https://tenor.com/bCPKr.gif",
     "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXkwcHJ2dWt2bGprcTNvbWt3c3pnM2p6bWRiNjRlNWg5YWk2MWtqdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/4oMoIbIQrvCjm/giphy.gif"
+]
+
+# List of NSFW word related GIF URLs
+NSFW_GIF_URLS = [
+    "https://tenor.com/bSpZU.gif",
+    "https://tenor.com/bhuWQ.gif",
+    "https://tenor.com/bL1CN.gif",
+    "https://tenor.com/bbvn1.gif",
+    "https://tenor.com/bd7Iv.gif",
+    "https://tenor.com/bT93M.gif",
+    "https://media.giphy.com/media/dw36yjtOAtuSZyxEJG/giphy.gif",
+    "https://media.giphy.com/media/y6Inkaz7omxAk/giphy.gif"
 ]
 
 # Custom exceptions
@@ -85,6 +120,7 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     total_count = sum(usage_stats.values())
     await update.message.reply_text(f"🚀 Your LFG count: {user_count}\n💎 Community LFG total: {total_count}")
 
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         message = update.message.text.lower()
@@ -95,7 +131,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if user_id != EXCLUDED_USER_ID:
                 logger.info(f"Message recorded for user {user_id} in group chat")
         
-        if any(keyword in message for keyword in ['lfgg', 'lfg']):
+        # Check for NSFW words (including plurals)
+        nsfw_keywords = ['fcker', 'fvcker', 'mtfr', 'fucker']
+        if any(keyword in message or f"{keyword}s" in message for keyword in nsfw_keywords):
+            logger.info("NSFW keyword detected, sending GIF")
+            nsfw_gif_url = random.choice(NSFW_GIF_URLS)
+            await update.message.reply_animation(nsfw_gif_url)
+        elif any(keyword in message for keyword in ['lfgg', 'lfg']):
             logger.info("LFG keyword detected, sending GIF")
             gif_url = random.choice(GIF_URLS)
             await update.message.reply_animation(gif_url)
